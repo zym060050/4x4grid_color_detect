@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">4x4Grid</string>
+    <string name="title_activity_modbus">Modbus Test</string>
+    
+    <string name="str_button_connect">Connect</string>
+    <string name="str_button_disconnect">Disconnect</string>
+    <string name="str_info_disconnected">disconnected</string>
+    
+    <string name="str_label_ref">Ref</string>
+    <string name="str_edittext_ref">0</string>
+    
+    <string name="str_label_value">Value</string>
+    <string name="str_edittext_value">1000</string>
+    
+    <string name="str_button_write">Write</string>
+    <string name="str_button_read">Read</string>
+    <string name="str_button_clear_log">Clear Log</string>
+    
+    <string name="str_textview_target">Target: </string>
+    <string name="str_textview_go">Go: </string>
+    <string name="str_textview_status">Status: </string>
+
+</resources>
