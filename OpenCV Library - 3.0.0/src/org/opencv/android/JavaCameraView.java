@@ -156,13 +156,15 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
                     {
                         params.setFocusMode(Camera.Parameters.FOCUS_MODE_CONTINUOUS_VIDEO);
                     }
-
+                    int MinExposure = params.getMinExposureCompensation();
+                    int MaxExposure = params.getMaxExposureCompensation();
+                    boolean isAutoExp = params.getAutoExposureLock();
+                    params.setExposureCompensation(MinExposure);
                     mCamera.setParameters(params);
                     params = mCamera.getParameters();
 
                     mFrameWidth = params.getPreviewSize().width;
                     mFrameHeight = params.getPreviewSize().height;
-
                     if ((getLayoutParams().width == LayoutParams.MATCH_PARENT) && (getLayoutParams().height == LayoutParams.MATCH_PARENT))
                         mScale = Math.min(((float)height)/mFrameHeight, ((float)width)/mFrameWidth);
                     else
