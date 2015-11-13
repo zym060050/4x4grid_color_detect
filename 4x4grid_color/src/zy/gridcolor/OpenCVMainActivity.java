@@ -26,19 +26,24 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Display;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.SurfaceView;
 import android.view.Window;
 import android.view.WindowManager;
+import android.widget.SeekBar;
 //import android.widget.EditText;
 //import android.widget.TextView;
 import android.widget.Toast;
 import net.wimpi.modbus.usbserial.SerialParameters;
 import android.content.Context;
 import android.content.Intent;
+import android.hardware.Camera;
+import android.hardware.Camera.CameraInfo;
 import android.hardware.usb.UsbManager;
+import android.widget.SeekBar.OnSeekBarChangeListener;
 
 public class OpenCVMainActivity extends Activity implements CvCameraViewListener2 {
     
@@ -106,6 +111,7 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
                 {
                     Log.i(TAG, "OpenCV loaded successfully");
                     camara.enableView();  
+                    //MeasureScreenSize();
                 } break;
                 default:
                 {
@@ -122,7 +128,6 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
     /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
-    	
         Log.i(TAG, "called onCreate");
         
         super.onCreate(savedInstanceState);
@@ -149,8 +154,8 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
 
         //Permanent maximum brightness
         WindowManager.LayoutParams layoutParams = getWindow().getAttributes();
-        layoutParams.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_FULL;
-        
+        //layoutParams.screenBrightness = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_FULL;
+        layoutParams.screenBrightness = -1;
         Log.i(TAG, "opencv_main_activity");
         setContentView(R.layout.opencv_main_activity);
         
@@ -159,11 +164,54 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
 
     	camara.setVisibility(SurfaceView.VISIBLE);
     	camara.setCvCameraViewListener(this);
-    	
     	//Measure Screen Size
-    	MeasureScreenSize();
-    }
+    	//MeasureScreenSize();
+        
 
+        final float start=-4;
+        final float end=4;
+        float start_pos=0;
+        int start_position=0;
+        
+		//start = -4; // you need to give starting value of SeekBar
+		//end = 4; // you need to give end value of SeekBar
+		start_pos = 0; // you need to give starting position value of SeekBar
+
+		start_position = (int) (((start_pos - start) / (end - start)) * 8);
+		//discrete = start_pos;
+		SeekBar seek = (SeekBar) findViewById(R.id.seekBar1);
+		seek.setMax(8);
+		seek.incrementProgressBy(1);
+		seek.setProgress(start_position);
+
+		seek.setOnSeekBarChangeListener(new OnSeekBarChangeListener() {
+	    	int discrete=0;
+			@Override
+			public void onStopTrackingTouch(SeekBar seekBar) {
+				// TODO Auto-generated method stub
+				Toast.makeText(getBaseContext(), "discrete = " + discrete, Toast.LENGTH_SHORT).show();
+				camara.setExposure(discrete);
+			}
+
+			@Override
+			public void onStartTrackingTouch(SeekBar seekBar) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
+				// TODO Auto-generated method stub
+				// To convert it as discrete value
+				float temp=progress;
+				float dis=end-start;
+				discrete=(int) (start+((temp/8)*dis));
+			}
+		});
+    }
+    
+    
+    
     @Override
     public void onPause()
     {
@@ -322,7 +370,6 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
     }
 
     public void onCameraViewStarted(int width, int height) {
-    	
     }
 
     public void onCameraViewStopped() {
@@ -337,7 +384,7 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
     	}else{
 	    	// Mat, then work in the frame pixels
 	    	Mat mat = frame.rgba();
-	    	
+	    	hightCamara = mat.height();
 	    	double box_starting_point_width = 0;//(widthCamara-hightCamara)/2;
 	    	double box_ending_point_width = hightCamara;//(widthCamara+hightCamara)/2;
 	    	double[] box_cell_color = {255, 255, 255, 255};
@@ -397,7 +444,7 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
                         String ColorName = getColorName(CellColor[0], CellColor[1], CellColor[2]);
                         if(RunFlag)
                         {
-                            if (ColorName == "Tone Green")
+                            if (ColorName == "Primary Green")
                             {
                                 target_temp |= POS_MASK[i][j];
                             }
@@ -418,6 +465,7 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
 	    //Mode ranges from Colors
     	// We estimate from Hue, instead of the value ... So we ranges
     	// http://en.wikipedia.org/wiki/Hue
+      
     	//Red
     	if(r >= g && g >= b){
     		ColorName = "Tone Red";
@@ -446,6 +494,18 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
     	if(r < 10.0 && g < 10.0 && b < 10.0){
     		ColorName = "Tone Black";
     	}
+    	if(r<100 && g<100 && b<100){
+          	ColorName = "LED not ON";
+        }
+    	if(r >= 200){
+    		ColorName = "Primary Red";
+    	}
+    	if(g >= 200){
+    		ColorName = "Primary Green";
+    	}
+    	if(b >= 200){
+    		ColorName = "Primary Blue";
+    	}
     	//White
     	if(r > 140.0 && g > 140.0 && b > 140.0){
     		if(r > 200.0 && g > 200.0 && b > 200.0){
@@ -458,9 +518,10 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
     }
     
     public void MeasureScreenSize() {
-        DisplayMetrics displaymetrics = new DisplayMetrics();
-        getWindowManager().getDefaultDisplay().getMetrics(displaymetrics);
-        //widthCamara = displaymetrics.widthPixels;
-        hightCamara = displaymetrics.heightPixels;
+        //Camera mCamera = Camera.open(-1);
+        //Camera.Parameters params = mCamera.getParameters();
+        //Log.d("ApplicationTagName", "Display width in px is " + params.getPreviewSize().height );
+        //hightCamara = params.getPreviewSize().height;
     }
+    
 }

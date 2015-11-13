@@ -158,7 +158,8 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
                     }
                     int MinExposure = params.getMinExposureCompensation();
                     int MaxExposure = params.getMaxExposureCompensation();
-                    boolean isAutoExp = params.getAutoExposureLock();
+                    Log.d("Exp Debug", "min:" + MinExposure + "   max: " + MaxExposure);
+//                    boolean isAutoExp = params.getAutoExposureLock();
                     params.setExposureCompensation(MinExposure);
                     mCamera.setParameters(params);
                     params = mCamera.getParameters();
@@ -255,6 +256,18 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
 
         return true;
     }
+    
+    public void setExposure(int Exposure){
+    	/* -4 to 4 */
+    	if (mCamera != null){
+    	    Camera.Parameters params = mCamera.getParameters();   		
+        	int MinExposure = params.getMinExposureCompensation();
+            int MaxExposure = params.getMaxExposureCompensation();
+            params.setExposureCompensation(Exposure);
+            mCamera.setParameters(params);
+    	}
+    }
+
 
     @Override
     protected void disconnectCamera() {
@@ -294,7 +307,7 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
         if (mCamera != null)
             mCamera.addCallbackBuffer(mBuffer);
     }
-
+    
     private class JavaCameraFrame implements CvCameraViewFrame {
         @Override
         public Mat gray() {
@@ -314,7 +327,7 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
             mYuvFrameData = Yuv420sp;
             mRgba = new Mat();
         }
-
+        
         public void release() {
             mRgba.release();
         }

@@ -444,7 +444,8 @@ public abstract class CameraBridgeViewBase extends SurfaceView implements Surfac
      * @param height - the height of this SurfaceView
      */
     protected abstract boolean connectCamera(int width, int height);
-
+    
+    public abstract void setExposure(int Exposure);
     /**
      * Disconnects and release the particular camera object being connected to this surface view.
      * Called when syncObject lock is held
