@@ -4,10 +4,15 @@ import org.opencv.android.BaseLoaderCallback;
 import org.opencv.android.CameraBridgeViewBase.CvCameraViewFrame;
 import org.opencv.android.LoaderCallbackInterface;
 import org.opencv.android.OpenCVLoader;
+import org.opencv.core.Core;
+import org.opencv.core.Core.MinMaxLocResult;
 //import org.opencv.core.Core;
 import org.opencv.core.Mat;
 import org.opencv.core.Point;
+import org.opencv.core.Rect;
 import org.opencv.core.Scalar;
+import org.opencv.core.Size;
+
 //import org.opencv.imgcodecs.*;
 //import org.opencv.videoio.*;
 import zy.grid.color.opencv.R;
@@ -175,7 +180,7 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
         
 		//start = -4; // you need to give starting value of SeekBar
 		//end = 4; // you need to give end value of SeekBar
-		start_pos = 0; // you need to give starting position value of SeekBar
+		start_pos = -4; // you need to give starting position value of SeekBar
 
 		start_position = (int) (((start_pos - start) / (end - start)) * 8);
 		//discrete = start_pos;
@@ -189,7 +194,7 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
 			@Override
 			public void onStopTrackingTouch(SeekBar seekBar) {
 				// TODO Auto-generated method stub
-				Toast.makeText(getBaseContext(), "discrete = " + discrete, Toast.LENGTH_SHORT).show();
+				Toast.makeText(getBaseContext(), "Exposure = " + discrete, Toast.LENGTH_SHORT).show();
 				camara.setExposure(discrete);
 			}
 
@@ -384,6 +389,14 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
     	}else{
 	    	// Mat, then work in the frame pixels
 	    	Mat mat = frame.rgba();
+	 /*   	Mat grayMat = mat.clone();
+	        Imgproc.cvtColor(mat, grayMat, Imgproc.COLOR_RGB2GRAY, 4);  
+	    	org.opencv.core.Size s = new Size(3,3);
+	    	Imgproc.GaussianBlur(grayMat, grayMat, s, 31.0);
+	    	MinMaxLocResult locRes = Core.minMaxLoc(grayMat);
+	    	Scalar c = new Scalar(255, 0, 0, 255);  
+	    	Imgproc.circle(mat, locRes.maxLoc, 31, c);*/
+	    	
 	    	hightCamara = mat.height();
 	    	double box_starting_point_width = 0;//(widthCamara-hightCamara)/2;
 	    	double box_ending_point_width = hightCamara;//(widthCamara+hightCamara)/2;
@@ -424,6 +437,10 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
 	    	        double text_slot_hight = hightCamara/32;
 	    	        //Retrieve the color of the central pixel
 	    	        double[] CellColor = mat.get(cell_central_y, cell_central_x);
+	    	        Mat roi = mat.submat(new Rect(new Point(cell_left_top_corner_x, cell_left_top_corner_y), 
+	    	        		new Point(cell_right_botom_corner_x, cell_right_botom_corner_y)));
+	    	        Scalar mean = Core.mean(roi);
+	    	        double[] CellColor2 = mean.val;
 	    	        if(CellColor != null)
 	    	        {
     	    	        //The inverse color, to paint the circle and always see it
@@ -438,15 +455,31 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
     	    	        String text_cell = "("+i+","+j+")";
     	    	        Imgproc.putText(mat, text_cell, new Point(cell_right_botom_corner_x, cell_right_botom_corner_y), 3, 0.75, new Scalar(255, 255, 255, 255), 1);
     	    	        //RGB Info
-    	                String text = "RGB: (" + i + "," + j + ") " + CellColor[0] + " " + CellColor[1] + " " + CellColor[2];
+    	                String text = "RGB: (" + i + "," + j + ") " + (int)CellColor2[0] + " " + (int)CellColor2[1] + " " + (int)CellColor2[2];
     	                Imgproc.putText(mat, text, new Point(box_ending_point_width, text_slot_hight*(2*(i*4+j)+1)), 3, 0.75, new Scalar(255, 0, 0, 255), 2);
     	                //text Color Name
-                        String ColorName = getColorName(CellColor[0], CellColor[1], CellColor[2]);
+                        //String ColorName = getColorName(CellColor[0], CellColor[1], CellColor[2]);
+                        String ColorName = getColorName(CellColor2[0], CellColor2[1], CellColor2[2]);
                         if(RunFlag)
                         {
+                        	/* Round 1 - Make sure at least 3 detection before firing off
+                        	 * Location should not change if camera is fixed, only until solenoid is fired off
+                        	 * Ensure only 1 target is detected to prevent multiple locations sent
+                        	 * */
+                        	/* Round 2 - Has another color, if detected, priortise move to the color first
+                        	 * 
+                        	 */
                             if (ColorName == "Primary Green")
                             {
-                                target_temp |= POS_MASK[i][j];
+                            	if(target_temp!=0){
+                            		//Detected more than once!!! Do not fire, wait for only one result
+                            	}
+                                target_temp |= POS_MASK[i][j]; 
+                            }
+                            if (ColorName == "Primary Red") //Assume this is priority
+                            {
+                            	//Add in check for round 2
+                            	target_temp |= POS_MASK[i][j]; //Allow overwrite
                             }
                         }
     	                Imgproc.putText(mat, ColorName, new Point(box_ending_point_width, text_slot_hight*(2*(i*4+j)+2)), 3, 0.75, new Scalar(255, 0, 0, 255), 2);
@@ -465,55 +498,62 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
 	    //Mode ranges from Colors
     	// We estimate from Hue, instead of the value ... So we ranges
     	// http://en.wikipedia.org/wiki/Hue
-      
-    	//Red
-    	if(r >= g && g >= b){
-    		ColorName = "Tone Red";
+        //Black
+        if(r<100 && g<100 && b<100){
+    		if(r < 20.0 && g < 20.0 && b < 20.0){
+              	ColorName = "Tone Black";
+            }
+    		else{
+    			ColorName = "LED not ON";
+    		}
     	}
-    	//Yellow
-    	if(g > r && r >= b){
-    		ColorName = "Tone Yellow";
-    	}
-    	//Green
-    	if(g >= b && b > r){
-    		ColorName = "Tone Green";
-    	}
-    	//Cyan
-    	if(b > g && g > r){
-    		ColorName = "Tone Cyan";
-    	}
-    	//Blue
-    	if(b > r && r >= g){
-    		ColorName = "Tone Blue";
-    	}
-    	//Magenta
-    	if(r >= b && b > g){
-    		ColorName = "Tone Magenta";
-    	}
-    	//Black
-    	if(r < 10.0 && g < 10.0 && b < 10.0){
-    		ColorName = "Tone Black";
-    	}
-    	if(r<100 && g<100 && b<100){
-          	ColorName = "LED not ON";
-        }
-    	if(r >= 200){
-    		ColorName = "Primary Red";
-    	}
-    	if(g >= 200){
-    		ColorName = "Primary Green";
-    	}
-    	if(b >= 200){
-    		ColorName = "Primary Blue";
-    	}
-    	//White
-    	if(r > 140.0 && g > 140.0 && b > 140.0){
+        //White
+        else if(r > 140.0 && g > 140.0 && b > 140.0){
     		if(r > 200.0 && g > 200.0 && b > 200.0){
     			ColorName = "White Pure";
     		}else{
     			ColorName = "Tone White";
     		}
     	}
+        else if(r >= 180){
+    		ColorName = "Primary Red";
+    	}
+        else if(g >= 180){
+    		ColorName = "Primary Green";
+    	}
+        else if(b >= 180){
+    		ColorName = "Primary Blue";
+    	}
+    	//Red
+        else if(r >= g && g >= b){
+    		ColorName = "Tone Red";
+    	}
+    	//Yellow
+        else if(g > r && r >= b){
+    		ColorName = "Tone Yellow";
+    	}
+    	//Green
+        else if(g >= b && b > r){
+    		ColorName = "Tone Green";
+    	}
+    	//Cyan
+        else if(b > g && g > r){
+    		ColorName = "Tone Cyan";
+    	}
+    	//Blue
+        else if(b > r && r >= g){
+    		ColorName = "Tone Blue";
+    	}
+    	//Magenta
+        else if(r >= b && b > g){
+    		ColorName = "Tone Magenta";
+    	}    	
+     
+        
+        else{
+        	ColorName = "Error";
+        }
+    	
     	return ColorName;
     }
     
