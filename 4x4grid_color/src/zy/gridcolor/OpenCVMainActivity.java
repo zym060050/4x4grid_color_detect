@@ -60,6 +60,12 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
                                                 {0x0100, 0x0200, 0x0400, 0x0800},
                                                 {0x1000, 0x2000, 0x4000, 0x8000}
                                             };
+    private String[][] POS_Color = {
+            {"LED not ON", "LED not ON", "LED not ON", "LED not ON"},
+            {"LED not ON", "LED not ON", "LED not ON", "LED not ON"},
+            {"LED not ON", "LED not ON", "LED not ON", "LED not ON"},
+            {"LED not ON", "LED not ON", "LED not ON", "LED not ON"}
+        };
 
     //private MenuItem			 menuWhiteAndBlack = null;
     private MenuItem             menuRun = null;
@@ -84,6 +90,7 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
             try {
                 if(RunFlag) {
                     write_target(Target_Data);
+                    //do a check, write all the time or? 
                 }
             }
             finally {
@@ -381,28 +388,22 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
         
     }
     
-    public Mat onCameraFrame(CvCameraViewFrame frame) {
-    	
-    	if(GrayMode){
-    		//Mode white and black
-    		return frame.gray();
-    	}else{
-	    	// Mat, then work in the frame pixels
-	    	Mat mat = frame.rgba();
-	 /*   	Mat grayMat = mat.clone();
-	        Imgproc.cvtColor(mat, grayMat, Imgproc.COLOR_RGB2GRAY, 4);  
-	    	org.opencv.core.Size s = new Size(3,3);
-	    	Imgproc.GaussianBlur(grayMat, grayMat, s, 31.0);
-	    	MinMaxLocResult locRes = Core.minMaxLoc(grayMat);
-	    	Scalar c = new Scalar(255, 0, 0, 255);  
-	    	Imgproc.circle(mat, locRes.maxLoc, 31, c);*/
-	    	
-	    	hightCamara = mat.height();
-	    	double box_starting_point_width = 0;//(widthCamara-hightCamara)/2;
-	    	double box_ending_point_width = hightCamara;//(widthCamara+hightCamara)/2;
-	    	double[] box_cell_color = {255, 255, 255, 255};
-	    	Imgproc.rectangle(mat, new Point(box_starting_point_width, 0), new Point(box_ending_point_width, hightCamara), new Scalar(box_cell_color[0], box_cell_color[1], box_cell_color[2], box_cell_color[3]), 5); //When painting, we use RGBA
-	    	//Lines horizontal
+	public Mat onCameraFrame(CvCameraViewFrame frame) {
+
+		if (GrayMode) {
+			// Mode white and black
+			return frame.gray();
+		} else {
+			// Mat, then work in the frame pixels
+			Mat mat = frame.rgba();
+			hightCamara = mat.height();
+			double box_starting_point_width = 0;// (widthCamara-hightCamara)/2;
+			double box_ending_point_width = hightCamara;// (widthCamara+hightCamara)/2;
+			double[] box_cell_color = { 255, 255, 255, 255 };
+			Imgproc.rectangle(mat, new Point(box_starting_point_width, 0),
+					new Point(box_ending_point_width, hightCamara),
+					new Scalar(box_cell_color[0], box_cell_color[1], box_cell_color[2], box_cell_color[3]), 5); // When painting, we use RGBA
+			//Lines horizontal
             //Imgproc.line(mat, new Point(box_starting_point_width, cell_length), new Point(box_ending_point_width, cell_length), new Scalar(box_cell_color[0], box_cell_color[1], box_cell_color[2],box_cell_color[3]), 2, 1, 0);
             //Imgproc.line(mat, new Point(box_starting_point_width, cell_length*2), new Point(box_ending_point_width, cell_length*2), new Scalar(box_cell_color[0], box_cell_color[1], box_cell_color[2],box_cell_color[3]), 2, 1, 0);
             //Imgproc.line(mat, new Point(box_starting_point_width, cell_length*3), new Point(box_ending_point_width, cell_length*3), new Scalar(box_cell_color[0], box_cell_color[1], box_cell_color[2],box_cell_color[3]), 2, 1, 0);
@@ -411,39 +412,43 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
             //Imgproc.line(mat, new Point(box_starting_point_width+cell_length*2, 0), new Point(box_starting_point_width+cell_length*2, hightCamara), new Scalar(box_cell_color[0], box_cell_color[1], box_cell_color[2],box_cell_color[3]), 2, 1, 0);
             //Imgproc.line(mat, new Point(box_starting_point_width+cell_length*3, 0), new Point(box_starting_point_width+cell_length*3, hightCamara), new Scalar(box_cell_color[0], box_cell_color[1], box_cell_color[2],box_cell_color[3]), 2, 1, 0);
 	    	
-	    	double scale = hightCamara/49.5;
-	    	double cell_width = scale*3.5;
-	    	double cell_hight = scale*1.3;
-	    	double left_blank_space = scale*9;
-	    	double botom_blank_space = scale*10;
-	    	double width_seperate_space = scale*6;
-	    	double height_seperate_space = scale*7.8;
-	    	//Imgproc.circle(mat, new Point(0, 0), 50, new Scalar(255, 0, 0), -1);
-	    	Imgproc.rectangle(mat, new Point(0, 0), new Point(250, 50), new Scalar(255, 255, 255, 255), -1); //When painting, we use RGBA
-	    	
-	    	int target_temp = 0;
-	    	for (int i=0;i<4;i++)
-	    	{
-	    	    for(int j=0;j<4;j++)
-	    	    {
-	    	        double cell_left_top_corner_x = box_starting_point_width+left_blank_space+(cell_width+width_seperate_space)*i;
-	    	        double cell_left_top_corner_y = hightCamara-(botom_blank_space+cell_hight+(cell_hight+height_seperate_space)*j);
-	    	        double cell_right_botom_corner_x = box_starting_point_width+left_blank_space+cell_width+(cell_width+width_seperate_space)*i;
-	    	        double cell_right_botom_corner_y = hightCamara-(botom_blank_space+(cell_hight+height_seperate_space)*j);
-	    	        Imgproc.rectangle(mat, new Point(cell_left_top_corner_x, cell_left_top_corner_y), new Point(cell_right_botom_corner_x, cell_right_botom_corner_y), new Scalar(box_cell_color[0], box_cell_color[1], box_cell_color[2], box_cell_color[3]), 2); //When painting, we use RGBA
-	    	        int cell_central_x = (int)(cell_left_top_corner_x+cell_width/2);
-	    	        int cell_central_y = (int)(cell_left_top_corner_y+cell_hight/2);
-	    	        //TEXT position
-	    	        double text_slot_hight = hightCamara/32;
-	    	        //Retrieve the color of the central pixel
-	    	        double[] CellColor = mat.get(cell_central_y, cell_central_x);
-	    	        Mat roi = mat.submat(new Rect(new Point(cell_left_top_corner_x, cell_left_top_corner_y), 
-	    	        		new Point(cell_right_botom_corner_x, cell_right_botom_corner_y)));
-	    	        Scalar mean = Core.mean(roi);
-	    	        double[] CellColor2 = mean.val;
-	    	        if(CellColor != null)
-	    	        {
-    	    	        //The inverse color, to paint the circle and always see it
+			double scale = hightCamara / 49.5;
+			double cell_width = scale * 3.5;
+			double cell_hight = scale * 1.3;
+			double left_blank_space = scale * 9;
+			double botom_blank_space = scale * 10;
+			double width_seperate_space = scale * 6;
+			double height_seperate_space = scale * 7.8;
+			// Imgproc.circle(mat, new Point(0, 0), 50, new Scalar(255, 0, 0),-1);
+			Imgproc.rectangle(mat, new Point(0, 0), new Point(250, 50), new Scalar(255, 255, 255, 255), -1); // When painting, we use RGBA
+
+			int target_temp = 0;
+			for (int i = 0; i < 4; i++) {
+				for (int j = 0; j < 4; j++) {
+					double cell_left_top_corner_x = box_starting_point_width + left_blank_space
+							+ (cell_width + width_seperate_space) * i;
+					double cell_left_top_corner_y = hightCamara
+							- (botom_blank_space + cell_hight + (cell_hight + height_seperate_space) * j);
+					double cell_right_botom_corner_x = box_starting_point_width + left_blank_space + cell_width
+							+ (cell_width + width_seperate_space) * i;
+					double cell_right_botom_corner_y = hightCamara
+							- (botom_blank_space + (cell_hight + height_seperate_space) * j);
+					Imgproc.rectangle(mat, new Point(cell_left_top_corner_x, cell_left_top_corner_y),
+							new Point(cell_right_botom_corner_x, cell_right_botom_corner_y),
+							new Scalar(box_cell_color[0], box_cell_color[1], box_cell_color[2], box_cell_color[3]), 2); // When painting, we use RGBA
+
+					int cell_central_x = (int) (cell_left_top_corner_x + cell_width / 2);
+					int cell_central_y = (int) (cell_left_top_corner_y + cell_hight / 2);
+					// TEXT position
+					double text_slot_hight = hightCamara / 32;
+					// Retrieve the color of the central pixel
+					double[] CellColor = mat.get(cell_central_y, cell_central_x);
+					Mat roi = mat.submat(new Rect(new Point(cell_left_top_corner_x, cell_left_top_corner_y),
+							new Point(cell_right_botom_corner_x, cell_right_botom_corner_y)));
+					Scalar mean = Core.mean(roi);
+					double[] CellColor2 = mean.val;
+					if (CellColor2 != null) {
+						//The inverse color, to paint the circle and always see it
     	    	        //double[] CellColorInverse = { 255 - CellColor[0], 255 - CellColor[1], 255 - CellColor[2], 255};
     	                //Circle
     	    	        //Imgproc.circle(mat, new Point(cell_central_x, cell_central_y), (int)(cell_hight/2), new Scalar(255, 255, 255), 2);
@@ -452,44 +457,77 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
     	                //Text generated in each frame with color in BGR (float)
     	                //Yes, BGR, OpenCV handles colors like Blue Green Red, not Red Green Blue
     	    	        //Mark Cell
-    	    	        String text_cell = "("+i+","+j+")";
-    	    	        Imgproc.putText(mat, text_cell, new Point(cell_right_botom_corner_x, cell_right_botom_corner_y), 3, 0.75, new Scalar(255, 255, 255, 255), 1);
-    	    	        //RGB Info
-    	                String text = "RGB: (" + i + "," + j + ") " + (int)CellColor2[0] + " " + (int)CellColor2[1] + " " + (int)CellColor2[2];
-    	                Imgproc.putText(mat, text, new Point(box_ending_point_width, text_slot_hight*(2*(i*4+j)+1)), 3, 0.75, new Scalar(255, 0, 0, 255), 2);
-    	                //text Color Name
-                        //String ColorName = getColorName(CellColor[0], CellColor[1], CellColor[2]);
-                        String ColorName = getColorName(CellColor2[0], CellColor2[1], CellColor2[2]);
-                        if(RunFlag)
-                        {
-                        	/* Round 1 - Make sure at least 3 detection before firing off
-                        	 * Location should not change if camera is fixed, only until solenoid is fired off
-                        	 * Ensure only 1 target is detected to prevent multiple locations sent
-                        	 * */
-                        	/* Round 2 - Has another color, if detected, priortise move to the color first
-                        	 * 
-                        	 */
-                            if (ColorName == "Primary Green")
-                            {
-                            	if(target_temp!=0){
-                            		//Detected more than once!!! Do not fire, wait for only one result
-                            	}
-                                target_temp |= POS_MASK[i][j]; 
-                            }
-                            if (ColorName == "Primary Red") //Assume this is priority
-                            {
-                            	//Add in check for round 2
-                            	target_temp |= POS_MASK[i][j]; //Allow overwrite
-                            }
-                        }
-    	                Imgproc.putText(mat, ColorName, new Point(box_ending_point_width, text_slot_hight*(2*(i*4+j)+2)), 3, 0.75, new Scalar(255, 0, 0, 255), 2);
-	    	        }
-	    	    }
-	    	}
-	    	Target_Data = target_temp;
-	        return mat;
-    	}
-    }
+						String text_cell = "(" + i + "," + j + ")";
+						Imgproc.putText(mat, text_cell, new Point(cell_right_botom_corner_x, cell_right_botom_corner_y),
+								3, 0.75, new Scalar(255, 255, 255, 255), 1);
+						// RGB Info
+						String text = "RGB: (" + i + "," + j + ") " + (int) CellColor2[0] + " " + (int) CellColor2[1]
+								+ " " + (int) CellColor2[2];
+						Imgproc.putText(mat, text,
+								new Point(box_ending_point_width, text_slot_hight * (2 * (i * 4 + j) + 1)), 3, 0.75,
+								new Scalar(255, 0, 0, 255), 2);
+						// text Color Name
+						// String ColorName = getColorName(CellColor[0],
+						// CellColor[1], CellColor[2]);
+						String ColorName = getColorName(CellColor2[0], CellColor2[1], CellColor2[2]);
+						POS_Color[i][j] = ColorName;
+						Imgproc.putText(mat, ColorName,
+								new Point(box_ending_point_width, text_slot_hight * (2 * (i * 4 + j) + 2)), 3, 0.75,
+								new Scalar(255, 0, 0, 255), 2);
+					}
+				}
+			}
+			if (RunFlag) {
+				/*
+				 * Round 1 - Make sure at least 3 detection before firing off
+				 * Location should not change if camera is fixed, only until
+				 * solenoid is fired off Ensure only 1 target is detected to
+				 * prevent multiple locations sent
+				 */
+				/*
+				 * Round 2 - Has another color, if detected, priortise move to
+				 * the color first
+				 * 
+				 */
+				int detected = 0;
+				boolean detected_bonus = false;
+				int pos_i = 0;
+				int pos_j = 0;
+				int pos_bonus_i = 0;
+				int pos_bonus_j = 0;
+				for (int i = 0; i < 4; i++) {
+					for (int j = 0; j < 4; j++) {
+						if (POS_Color[i][j] == "Primary Green") {
+							detected++;
+							pos_i = i;
+							pos_j = j;
+						} else if (POS_Color[i][j] == "Primary Red") {
+							detected_bonus = true;
+							pos_bonus_i = i;
+							pos_bonus_j = j;
+						}
+					}
+				}
+				if (detected == 1 && detected_bonus == false) {
+					target_temp |= POS_MASK[pos_i][pos_j];
+				} else if (detected_bonus == true) {
+					target_temp |= POS_MASK[pos_bonus_i][pos_bonus_j];
+				} else {
+					target_temp = 0;
+				}
+				/*
+				 * if (ColorName == "Primary Green") { if(target_temp!=0){
+				 * //Detected more than once!!! Do not fire, wait for only one
+				 * result } target_temp |= POS_MASK[i][j]; } if (ColorName ==
+				 * "Primary Red") //Assume this is priority { //Add in check for
+				 * round 2 target_temp |= POS_MASK[i][j]; //Allow overwrite } }
+				 */
+
+			}
+			Target_Data = target_temp;
+			return mat;
+		}
+	}
 
     public String getColorName(double r, double g, double b){
         
