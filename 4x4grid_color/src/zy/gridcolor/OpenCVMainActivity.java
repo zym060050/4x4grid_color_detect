@@ -396,6 +396,14 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
 		} else {
 			// Mat, then work in the frame pixels
 			Mat mat = frame.rgba();
+			Mat saturated;
+
+			double saturation = 10;
+			double scale_sat = 3;
+
+			// what it does here is dst = (uchar) ((double)src*scale+saturation); 
+			mat.convertTo(mat, mat.type(), scale_sat, saturation); 
+			
 			hightCamara = mat.height();
 			double box_starting_point_width = 0;// (widthCamara-hightCamara)/2;
 			double box_ending_point_width = hightCamara;// (widthCamara+hightCamara)/2;
