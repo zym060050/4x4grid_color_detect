@@ -146,7 +146,7 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
 
                     params.setPreviewFormat(ImageFormat.NV21);
                     Log.d(TAG, "Set preview size to " + Integer.valueOf((int)frameSize.width) + "x" + Integer.valueOf((int)frameSize.height));
-                    params.setPreviewSize((int)frameSize.width, (int)frameSize.height);
+                    params.setPreviewSize((int)(frameSize.width*0.5), (int)(frameSize.height*0.5));
 
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.ICE_CREAM_SANDWICH && !android.os.Build.MODEL.equals("GT-I9100"))
                         params.setRecordingHint(true);
@@ -161,6 +161,7 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
                     Log.d("Exp Debug", "min:" + MinExposure + "   max: " + MaxExposure);
 //                    boolean isAutoExp = params.getAutoExposureLock();
                     params.setExposureCompensation(MinExposure);
+                    params.setColorEffect(Camera.Parameters.EFFECT_NEGATIVE);
                     mCamera.setParameters(params);
                     params = mCamera.getParameters();
 
@@ -298,7 +299,7 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
 
     @Override
     public void onPreviewFrame(byte[] frame, Camera arg1) {
-        Log.d(TAG, "Preview Frame received. Frame size: " + frame.length);
+        //Log.d(TAG, "Preview Frame received. Frame size: " + frame.length);
         synchronized (this) {
             mFrameChain[mChainIdx].put(0, 0, frame);
             mCameraFrameReady = true;
@@ -361,7 +362,7 @@ public class JavaCameraView extends CameraBridgeViewBase implements PreviewCallb
                         deliverAndDrawFrame(mCameraFrame[1 - mChainIdx]);
                 }
             } while (!mStopThread);
-            Log.d(TAG, "Finish processing thread");
+            //Log.d(TAG, "Finish processing thread");
         }
     }
 }
