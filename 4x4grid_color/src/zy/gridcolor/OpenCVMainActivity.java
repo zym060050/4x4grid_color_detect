@@ -49,6 +49,7 @@ import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
 import android.hardware.usb.UsbManager;
 import android.widget.SeekBar.OnSeekBarChangeListener;
+import android.widget.TextView;
 
 public class OpenCVMainActivity extends Activity implements CvCameraViewListener2 {
     
@@ -77,7 +78,10 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
     private boolean				 GrayMode = false;
     //private int					 widthCamara = 800;
     private int					 hightCamara = 480;
-    
+    private TextView text_debug_red;
+    private String debug_red;
+    private TextView text_debug_green;
+    private String debug_green;
     UsbManager m_UsbManager;
     ModbusSerialClient m_modbus;
     //run handler
@@ -220,6 +224,9 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
 				discrete=(int) (start+((temp/8)*dis));
 			}
 		});
+		
+		text_debug_red = (TextView) findViewById(R.id.textview_red);
+		text_debug_green = (TextView) findViewById(R.id.textview_green);
     }
     
     
@@ -402,16 +409,26 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
 			double scale_sat = 3;
 
 			// what it does here is dst = (uchar) ((double)src*scale+saturation); 
-			//mat.convertTo(mat, mat.type(), scale_sat, saturation); 
-			
+			//mat.convertTo(mat, mat.type(), scale_sat, saturation);
+			// may or may not need blur
+			Imgproc.GaussianBlur(mat, mat, new Size(11, 11), 0);
 			hightCamara = mat.height();
 			int target_temp = 0;
+			int target_temp_green = 0;
 			Scalar box_color = new Scalar(0,0,0,0);
 			
 			int[] box_red = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 			int[] box_green = {0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+			//Amount of pixels to verify before sending
 			int detect_amt = 20;
-			int new_factor = 2;
+			//factor should be in scale with javacameraview -> frameSize.width*factor
+			int new_factor = 2; 
+			//Set width, height for area of detection
+			//space is the space between each area
+			//col = x , row = y ; This is the starting position upper left of 1st area
+			//current max is 960x540
+			//Ensure (row1_col+row1space*i+row1width)<960
+			//Ensure (row1_row+row1height)<960x540
 			int row1width=125/new_factor, row1height=65/new_factor, row1space=315/new_factor;
 			int row1_row=120/new_factor, row1_col=320/new_factor;
 			for (int i = 0; i < 4; i++) {
@@ -421,9 +438,9 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
 						for (int mat_col = row1_col+row1space*i; mat_col < row1_col+row1space*i+row1width; mat_col++) {
 							double[] CellColorTest = mat.get(mat_row, mat_col);
 							String ColorNameTest = getColorName(CellColorTest[0], CellColorTest[1], CellColorTest[2]);
-							if (ColorNameTest == "Primary Red")
-								box_red[i+1]++;
 							if (ColorNameTest == "Primary Green")
+								box_red[i+1]++;
+							if (ColorNameTest == "Primary Red")
 								box_green[i+1]++;
 							if (box_red[i+1] > detect_amt) {
 								Imgproc.putText(mat, "Primary Red", new Point(mat_col, mat_row), 3, 0.5,
@@ -434,6 +451,7 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
 							if (box_green[i+1] > detect_amt) {
 								Imgproc.putText(mat, "Primary Green", new Point(mat_col, mat_row), 3, 0.5,
 										new Scalar(255, 0, 0, 255), 1);
+								target_temp_green |= POS_MASK[0][i];
 								break search1;
 							}
 						}
@@ -449,9 +467,9 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
 						for (int mat_col = row2_col+row2space*i; mat_col < row2_col+row2space*i+row2width; mat_col++) {
 							double[] CellColorTest = mat.get(mat_row, mat_col);
 							String ColorNameTest = getColorName(CellColorTest[0], CellColorTest[1], CellColorTest[2]);
-							if (ColorNameTest == "Primary Red")
-								box_red[i+5]++;
 							if (ColorNameTest == "Primary Green")
+								box_red[i+5]++;
+							if (ColorNameTest == "Primary Red")
 								box_green[i+5]++;
 							if (box_red[i+5] > detect_amt) {
 								Imgproc.putText(mat, "Primary Red", new Point(mat_col, mat_row), 3, 0.5,
@@ -462,6 +480,7 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
 							if (box_green[i+5] > detect_amt) {
 								Imgproc.putText(mat, "Primary Green", new Point(mat_col, mat_row), 3, 0.5,
 										new Scalar(255, 0, 0, 255), 1);
+								target_temp_green |= POS_MASK[1][i];
 								break search2;
 							}
 						}
@@ -477,9 +496,9 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
 						for (int mat_col = row3_col+row3space*i; mat_col < row3_col+row3space*i+row3width; mat_col++) {
 							double[] CellColorTest = mat.get(mat_row, mat_col);
 							String ColorNameTest = getColorName(CellColorTest[0], CellColorTest[1], CellColorTest[2]);
-							if (ColorNameTest == "Primary Red")
-								box_red[i+9]++;
 							if (ColorNameTest == "Primary Green")
+								box_red[i+9]++;
+							if (ColorNameTest == "Primary Red")
 								box_green[i+9]++;
 							if (box_red[i+9] > detect_amt) {
 								Imgproc.putText(mat, "Primary Red", new Point(mat_col, mat_row), 3, 0.5,
@@ -490,6 +509,7 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
 							if (box_green[i+9] > detect_amt) {
 								Imgproc.putText(mat, "Primary Green", new Point(mat_col, mat_row), 3, 0.5,
 										new Scalar(255, 0, 0, 255), 1);
+								target_temp_green |= POS_MASK[2][i];
 								break search3;
 							}
 						}
@@ -505,9 +525,9 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
 						for (int mat_col = row4_col+row4space*i; mat_col < row4_col+row4space*i+row4width; mat_col++) {
 							double[] CellColorTest = mat.get(mat_row, mat_col);
 							String ColorNameTest = getColorName(CellColorTest[0], CellColorTest[1], CellColorTest[2]);
-							if (ColorNameTest == "Primary Red")
-								box_red[i+13]++;
 							if (ColorNameTest == "Primary Green")
+								box_red[i+13]++;
+							if (ColorNameTest == "Primary Red")
 								box_green[i+13]++;
 							if (box_red[i+13] > detect_amt) {
 								Imgproc.putText(mat, "Primary Red", new Point(mat_col, mat_row), 3, 0.5,
@@ -518,63 +538,66 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
 							if (box_green[i+13] > detect_amt) {
 								Imgproc.putText(mat, "Primary Green", new Point(mat_col, mat_row), 3, 0.5,
 										new Scalar(255, 0, 0, 255), 1);
+								target_temp_green |= POS_MASK[3][i];
 								break search4;
 							}
 						}
 					}
 				}
 			}
-			Log.d("POS", Integer.toString(target_temp,2));
+			//Log.d("POS", Integer.toString(target_temp,2));
+			StringBuilder red_stringbuilder = new StringBuilder();
+			red_stringbuilder.append("Red: ");
+			StringBuilder green_stringbuilder = new StringBuilder();
+			green_stringbuilder.append("Green: ");
+			for(int x=0;x<16;x++){
+				int value = (int)(Math.pow(2,x));
+				if((target_temp & value)==value){
+					red_stringbuilder.append(x+1);
+					red_stringbuilder.append(",");
+				}
+				if((target_temp_green & value)==value){
+					green_stringbuilder.append(x+1);
+					green_stringbuilder.append(",");
+				}
+			}
+			debug_red = red_stringbuilder.toString();
+			debug_green = green_stringbuilder.toString();
+			
+			runOnUiThread(new Runnable() {
 
+				@Override
+				public void run() {
+					// TODO Auto-generated method stub
+					text_debug_red.setText(debug_red);
+					text_debug_green.setText(debug_green);
+				}
+			});
+			
 
 			if (RunFlag) {
-				/*
-				 * Round 1 - Make sure at least 3 detection before firing off
-				 * Location should not change if camera is fixed, only until
-				 * solenoid is fired off Ensure only 1 target is detected to
-				 * prevent multiple locations sent
-				 */
-				/*
-				 * Round 2 - Has another color, if detected, priortise move to
-				 * the color first
-				 * 
-				 */
-				int detected = 0;
-				boolean detected_bonus = false;
-				int pos_i = 0;
-				int pos_j = 0;
-				int pos_bonus_i = 0;
-				int pos_bonus_j = 0;
-				for (int i = 0; i < 4; i++) {
-					for (int j = 0; j < 4; j++) {
-						if (POS_Color[i][j] == "Primary Green") {
-							detected++;
-							pos_i = i;
-							pos_j = j;
-						} else if (POS_Color[i][j] == "Primary Red") {
-							detected_bonus = true;
-							pos_bonus_i = i;
-							pos_bonus_j = j;
-						}
-					}
-				}
-				if (detected == 1 && detected_bonus == false) {
-					target_temp |= POS_MASK[pos_i][pos_j];
-				} else if (detected_bonus == true) {
-					target_temp |= POS_MASK[pos_bonus_i][pos_bonus_j];
-				} else {
-					target_temp = 0;
-				}
-				/*
-				 * if (ColorName == "Primary Green") { if(target_temp!=0){
-				 * //Detected more than once!!! Do not fire, wait for only one
-				 * result } target_temp |= POS_MASK[i][j]; } if (ColorName ==
-				 * "Primary Red") //Assume this is priority { //Add in check for
-				 * round 2 target_temp |= POS_MASK[i][j]; //Allow overwrite } }
-				 */
 
+				int round=1; //change this to change rounds
+				if(target_temp==0 &&target_temp_green>0 &&round==1){
+					//Send green
+					//need to check which is normal color
+					Target_Data = target_temp_green;
+					//Do the decision on micro800
+				}
+
+				if(target_temp>0 && target_temp_green>0 &&round==2){
+					//Send red
+					Target_Data = target_temp;
+					//Do the decision on micro800
+				}
+				else if(target_temp==0 && target_temp_green>0 &&round==2){
+					Target_Data = target_temp_green;
+				}
+				else{
+					Target_Data = target_temp_green;
+				}
 			}
-			Target_Data = target_temp;
+
 			return mat;
 		}
 	}

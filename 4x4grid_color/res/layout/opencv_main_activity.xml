@@ -21,11 +21,11 @@
     </LinearLayout>
 
     <LinearLayout
+        android:id="@+id/linearLayout2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentBottom="true"
         android:orientation="horizontal" >
-
     </LinearLayout>
 
     <SeekBar
@@ -36,5 +36,23 @@
         android:layout_alignParentRight="true"
         android:layout_weight="1"
         android:paddingRight="@dimen/activity_horizontal_margin" />
+
+    <TextView
+        android:id="@+id/textview_green"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentLeft="true"
+        android:text="&quot;Testing&quot;"
+        android:textSize="10dp" />
+
+    <TextView
+        android:id="@+id/textview_red"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_above="@+id/textview_green"
+        android:layout_alignParentLeft="true"
+        android:text="Test Red"
+        android:textSize="10dp" />
 
 </RelativeLayout>
