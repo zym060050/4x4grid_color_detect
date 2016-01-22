@@ -429,8 +429,8 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
 			//current max is 960x540
 			//Ensure (row1_col+row1space*i+row1width)<960
 			//Ensure (row1_row+row1height)<960x540
-			int row1width=125/new_factor, row1height=65/new_factor, row1space=315/new_factor;
-			int row1_row=120/new_factor, row1_col=320/new_factor;
+			int row1width=60, row1height=10, row1space=160;
+			int row1_row=60, row1_col=190;
 			for (int i = 0; i < 4; i++) {
 				Imgproc.rectangle(mat, new Point(row1_col+row1space*i, row1_row),new Point(row1_col+row1space*i+row1width, row1_row+row1height),box_color, 2);
 				search1: {
@@ -443,13 +443,13 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
 							if (ColorNameTest == "Primary Red")
 								box_green[i+1]++;
 							if (box_red[i+1] > detect_amt) {
-								Imgproc.putText(mat, "Primary Red", new Point(mat_col, mat_row), 3, 0.5,
+								Imgproc.putText(mat, "R", new Point(mat_col, mat_row), 3, 0.5,
 										new Scalar(255, 0, 0, 255), 1);
 								target_temp |= POS_MASK[0][i];
 								break search1;
 							}
 							if (box_green[i+1] > detect_amt) {
-								Imgproc.putText(mat, "Primary Green", new Point(mat_col, mat_row), 3, 0.5,
+								Imgproc.putText(mat, "G", new Point(mat_col, mat_row), 3, 0.5,
 										new Scalar(255, 0, 0, 255), 1);
 								target_temp_green |= POS_MASK[0][i];
 								break search1;
@@ -458,8 +458,8 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
 					}
 				}
 			}
-			int row2width=(125+10)/new_factor, row2height=(65+10)/new_factor, row2space=(315+10)/new_factor;
-			int row2_row=315/new_factor, row2_col=310/new_factor;
+			int row2width=60, row2height=20, row2space=190;
+			int row2_row=120, row2_col=160;
 			for (int i = 0; i < 4; i++) {
 				Imgproc.rectangle(mat, new Point(row2_col+row2space*i, row2_row),new Point(row2_col+row2space*i+row2width, row2_row+row2height),box_color, 2);
 				search2: {
@@ -472,13 +472,13 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
 							if (ColorNameTest == "Primary Red")
 								box_green[i+5]++;
 							if (box_red[i+5] > detect_amt) {
-								Imgproc.putText(mat, "Primary Red", new Point(mat_col, mat_row), 3, 0.5,
+								Imgproc.putText(mat, "R", new Point(mat_col, mat_row), 3, 0.5,
 										new Scalar(255, 0, 0, 255), 1);
 								target_temp |= POS_MASK[1][i];
 								break search2;
 							}
 							if (box_green[i+5] > detect_amt) {
-								Imgproc.putText(mat, "Primary Green", new Point(mat_col, mat_row), 3, 0.5,
+								Imgproc.putText(mat, "G", new Point(mat_col, mat_row), 3, 0.5,
 										new Scalar(255, 0, 0, 255), 1);
 								target_temp_green |= POS_MASK[1][i];
 								break search2;
@@ -487,8 +487,8 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
 					}
 				}
 			}
-			int row3width=(125+20)/new_factor, row3height=(65+20)/new_factor, row3space=(315+20)/new_factor;
-			int row3_row=510/new_factor, row3_col=300/new_factor;
+			int row3width=70, row3height=25, row3space=220;
+			int row3_row=205, row3_col=115;
 			for (int i = 0; i < 4; i++) {
 				Imgproc.rectangle(mat, new Point(row3_col+row3space*i, row3_row),new Point(row3_col+row3space*i+row3width, row3_row+row3height),box_color, 2);
 				search3: {
@@ -501,13 +501,13 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
 							if (ColorNameTest == "Primary Red")
 								box_green[i+9]++;
 							if (box_red[i+9] > detect_amt) {
-								Imgproc.putText(mat, "Primary Red", new Point(mat_col, mat_row), 3, 0.5,
+								Imgproc.putText(mat, "R", new Point(mat_col, mat_row), 3, 0.5,
 										new Scalar(255, 0, 0, 255), 1);
 								target_temp |= POS_MASK[2][i];
 								break search3;
 							}
 							if (box_green[i+9] > detect_amt) {
-								Imgproc.putText(mat, "Primary Green", new Point(mat_col, mat_row), 3, 0.5,
+								Imgproc.putText(mat, "G", new Point(mat_col, mat_row), 3, 0.5,
 										new Scalar(255, 0, 0, 255), 1);
 								target_temp_green |= POS_MASK[2][i];
 								break search3;
@@ -516,8 +516,8 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
 					}
 				}
 			}
-			int row4width=(125+20)/new_factor, row4height=(65+20)/new_factor, row4space=(315+20)/new_factor;
-			int row4_row=705/new_factor, row4_col=300/new_factor;
+			int row4width=90, row4height=30, row4space=280;
+			int row4_row=350, row4_col=25;
 			for (int i = 0; i < 4; i++) {
 				Imgproc.rectangle(mat, new Point(row4_col+row4space*i, row4_row),new Point(row4_col+row4space*i+row4width, row4_row+row4height),box_color, 2);
 				search4: {
@@ -530,13 +530,13 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
 							if (ColorNameTest == "Primary Red")
 								box_green[i+13]++;
 							if (box_red[i+13] > detect_amt) {
-								Imgproc.putText(mat, "Primary Red", new Point(mat_col, mat_row), 3, 0.5,
+								Imgproc.putText(mat, "R", new Point(mat_col, mat_row), 3, 0.5,
 										new Scalar(255, 0, 0, 255), 1);
 								target_temp |= POS_MASK[3][i];
 								break search4;
 							}
 							if (box_green[i+13] > detect_amt) {
-								Imgproc.putText(mat, "Primary Green", new Point(mat_col, mat_row), 3, 0.5,
+								Imgproc.putText(mat, "G", new Point(mat_col, mat_row), 3, 0.5,
 										new Scalar(255, 0, 0, 255), 1);
 								target_temp_green |= POS_MASK[3][i];
 								break search4;
