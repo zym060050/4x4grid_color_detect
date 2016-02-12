@@ -73,7 +73,7 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
     private MenuItem             menuStop = null;
     private boolean              RunFlag = false;
     private int                  Target_Data = 0;
-    
+    private int					 round=1; //change this to change rounds
     private MenuItem             menuModbusTest = null;
     private boolean				 GrayMode = false;
     //private int					 widthCamara = 800;
@@ -289,18 +289,20 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
         
         menuRun = menu.add("Run");
         menuStop = menu.add("Stop");
-        
         menuModbusTest = menu.add("Modbus Test");
         
         //menuWhiteAndBlack = menu.add("White and Black");
         
-        SubMenu subMenu = menu.addSubMenu(4, 4, 4, "Select a Resolution");
+        SubMenu subMenu = menu.addSubMenu(4, 4, 4, "Resolution");
         subMenu.add(1, 10, 1, "Auto Measure");
         subMenu.add(1, 11, 2, "Full HD resolution (1920x1080)");
         subMenu.add(1, 12, 3, "High resolution (1280x720)");
         subMenu.add(1, 13, 4, "Medium Resolution (960x720)");
         subMenu.add(1, 14, 5, "Low Resolution (800x480)");
         
+        SubMenu subMenu2 = menu.addSubMenu(5,5,5,"Round");
+        subMenu2.add(1,15,1,"Round 1");
+        subMenu2.add(1,16,2,"Round 2");
         return true;
     }
     
@@ -384,6 +386,16 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
             	toast = Toast.makeText(this, "Resolution of HUD minimum" , Toast.LENGTH_LONG);
         		toast.show();
                 break;
+            case 15:
+                round=1;
+            	toast = Toast.makeText(this, "Round 1" , Toast.LENGTH_LONG);
+        		toast.show();
+                break;
+            case 16:
+                round=2;
+            	toast = Toast.makeText(this, "Round 2" , Toast.LENGTH_LONG);
+        		toast.show();
+                break;
         }
         return true;
     }
@@ -411,7 +423,7 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
 			// what it does here is dst = (uchar) ((double)src*scale+saturation); 
 			//mat.convertTo(mat, mat.type(), scale_sat, saturation);
 			// may or may not need blur
-			Imgproc.GaussianBlur(mat, mat, new Size(11, 11), 0);
+			//Imgproc.GaussianBlur(mat, mat, new Size(11, 11), 0);
 			hightCamara = mat.height();
 			int target_temp = 0;
 			int target_temp_green = 0;
@@ -429,7 +441,7 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
 			//current max is 960x540
 			//Ensure (row1_col+row1space*i+row1width)<960
 			//Ensure (row1_row+row1height)<960x540
-			int row1width=60, row1height=10, row1space=160;
+			int row1width=60, row1height=15, row1space=160;
 			int row1_row=60, row1_col=190;
 			for (int i = 0; i < 4; i++) {
 				Imgproc.rectangle(mat, new Point(row1_col+row1space*i, row1_row),new Point(row1_col+row1space*i+row1width, row1_row+row1height),box_color, 2);
@@ -458,8 +470,8 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
 					}
 				}
 			}
-			int row2width=60, row2height=20, row2space=190;
-			int row2_row=120, row2_col=160;
+			int row2width=60, row2height=25, row2space=190;
+			int row2_row=130, row2_col=160;
 			for (int i = 0; i < 4; i++) {
 				Imgproc.rectangle(mat, new Point(row2_col+row2space*i, row2_row),new Point(row2_col+row2space*i+row2width, row2_row+row2height),box_color, 2);
 				search2: {
@@ -487,7 +499,7 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
 					}
 				}
 			}
-			int row3width=70, row3height=25, row3space=220;
+			int row3width=70, row3height=30, row3space=220;
 			int row3_row=205, row3_col=115;
 			for (int i = 0; i < 4; i++) {
 				Imgproc.rectangle(mat, new Point(row3_col+row3space*i, row3_row),new Point(row3_col+row3space*i+row3width, row3_row+row3height),box_color, 2);
@@ -516,7 +528,7 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
 					}
 				}
 			}
-			int row4width=90, row4height=30, row4space=280;
+			int row4width=95, row4height=35, row4space=280;
 			int row4_row=350, row4_col=25;
 			for (int i = 0; i < 4; i++) {
 				Imgproc.rectangle(mat, new Point(row4_col+row4space*i, row4_row),new Point(row4_col+row4space*i+row4width, row4_row+row4height),box_color, 2);
@@ -577,7 +589,7 @@ public class OpenCVMainActivity extends Activity implements CvCameraViewListener
 
 			if (RunFlag) {
 
-				int round=1; //change this to change rounds
+				
 				if(target_temp==0 &&target_temp_green>0 &&round==1){
 					//Send green
 					//need to check which is normal color
